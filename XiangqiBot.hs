@@ -9,6 +9,7 @@ import Data.Char
 -- More modules may be imported
 
 import Util
+import GHC.RTS.Flags (ProfFlags(startHeapProfileAtStartup))
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
@@ -48,44 +49,68 @@ spalteToInt x = case x of
 getSpalte :: Int -> Int
 getSpalte pos = div pos 10
 
-
-getPotentialMove :: String -> Char -> Int -> Int -> Bool -> String
-getPotentialMove b p startPos zielPos checkIfChecks = do
-  case  toLower (b !! (startPos -1)) of -- trace ("player: " ++ show p ++ show (b !! (startPos -1)) ++ show startPos ++ "->" ++ show zielPos ++ " b: " ++ b)
-    'p' -> getPawnMoves b p startPos zielPos checkIfChecks
-    'k' -> getKingMoves b p startPos zielPos checkIfChecks
-    'r' -> getRookMoves b p startPos zielPos checkIfChecks
-    'n' -> getKnightMoves b p startPos zielPos checkIfChecks
-    'b' -> getBishopMoves b p startPos zielPos checkIfChecks
-    'q' -> getQueenMoves b p startPos zielPos checkIfChecks
-    '0' -> ""
-
---redPlayer = true
-getAdvisorMoves :: String -> Bool -> [Int] -> [Int] -> String
-getAdvisorMoves board player startPos zielPos =
+getGeneralMoves :: Bool -> [Int] -> [Int] -> String
+getGeneralMoves player startPos zielPos =
     if startPos == zielPos
         then ""
-        else 
-            if canMove && doesNotResultInCheck
+    else 
+        if canMove && doesNotResultInCheck
             then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-            else ""
-        where
-            xStart = startPos !! 1
-            yStart = startPos !! 0
-            xZiel = zielPos !! 1
-            yZiel = zielPos !! 0
-            canMove = isInPalast player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
+        else ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove = isInPalast player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
+
+
+
+getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
+getAdvisorMoves player startPos zielPos =
+    if startPos == zielPos
+        then ""
+    else 
+        if canMove && doesNotResultInCheck
+            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
+        else ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove = isInPalast player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
     
-getSoldierMoves :: String -> Bool -> [Int] -> [Int] -> String
-getSoldierMoves board player startPos zielPos =
+getSoldierMoves :: Bool -> [Int] -> [Int] -> String
+getSoldierMoves player startPos zielPos =
     if startPos == zielPos
         then ""
-        else 
-            if canMove && doesNotResultInCheck
+    else 
+        if canMove && doesNotResultInCheck && moveVertHor
             then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-            else ""
-        where
-            xStart = startPos !! 1
-            yStart = startPos !! 0
-            xZiel = zielPos !! 1
-            yZiel = zielPos !! 0
+        else ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        moveVertHor = (xStart - xZiel == 0) || (yStart - yZiel == 0)
+        canMove = 
+            if player then redSoldierValid startPos zielPos 
+                else blackSoldierValid startPos zielPos
+            
+redSoldierValid :: [Int] -> [Int] -> Bool
+redSoldierValid startPos zielPos = ownTerritoryValid || opponentTerritoryValid 
+    where 
+        --own territory only forward
+        ownTerritoryValid = startPos!!0 > 4 && startPos!!0 - zielPos!!0 == 1
+        --opponent territory only vertical and horizonal, but no backwards
+        opponentTerritoryValid = startPos!!0 < 5 && (abs (startPos!!0 - zielPos!!0) + abs (startPos!!1 - zielPos!!1) == 1) && (startPos!!0 - zielPos!!0 /= -1)
+
+blackSoldierValid :: [Int] -> [Int] -> Bool
+blackSoldierValid startPos zielPos = ownTerritoryValid || opponentTerritoryValid
+    where
+        --own territory only forward
+        ownTerritoryValid = startPos!!0 < 5 && startPos!!0 - zielPos!!0 == -1 
+        --opponent territory only vertical and horizonal, but no backwards
+        opponentTerritoryValid = startPos!!0 > 4 && (abs (startPos!!0 - zielPos!!0) + abs (startPos!!1 - zielPos!!1) == 1) && (startPos!!0 - zielPos!!0 /= 1)
