@@ -219,7 +219,7 @@ getSoldierMoves player startPos zielPos =
     if startPos == zielPos
         then ""
     else 
-        if canMove && doesNotResultInCheck && moveVertHor
+        if canMove && doesNotResultInCheck
             then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
         else ""
     where
@@ -227,7 +227,6 @@ getSoldierMoves player startPos zielPos =
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        moveVertHor = (xStart - xZiel == 0) || (yStart - yZiel == 0)
         canMove 
             | (xStart - xZiel /= 0) && (yStart - yZiel /= 0) = False --either vertical or horizontal
             | player = redSoldierValid startPos zielPos 
