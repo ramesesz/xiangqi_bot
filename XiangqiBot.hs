@@ -189,8 +189,6 @@ getGeneralMoves player startPos zielPos =
         yZiel = zielPos !! 0
         canMove = isInPalast player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
 
-
-
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
 getAdvisorMoves player startPos zielPos =
     if startPos == zielPos
@@ -239,23 +237,31 @@ getSoldierMoves player startPos zielPos =
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
         moveVertHor = (xStart - xZiel == 0) || (yStart - yZiel == 0)
-        canMove = 
-            if player then redSoldierValid startPos zielPos 
-                else blackSoldierValid startPos zielPos
+        canMove 
+            | (xStart - xZiel /= 0) && (yStart - yZiel /= 0) = False --either vertical or horizontal
+            | player = redSoldierValid startPos zielPos 
+            | not player = blackSoldierValid startPos zielPos
             
 redSoldierValid :: [Int] -> [Int] -> Bool
-redSoldierValid startPos zielPos = ownTerritoryValid || opponentTerritoryValid 
-    where 
-        --own territory only forward
-        ownTerritoryValid = startPos!!0 > 4 && startPos!!0 - zielPos!!0 == 1
-        --opponent territory only vertical and horizonal, but no backwards
-        opponentTerritoryValid = startPos!!0 < 5 && (abs (startPos!!0 - zielPos!!0) + abs (startPos!!1 - zielPos!!1) == 1) && (startPos!!0 - zielPos!!0 /= -1)
+redSoldierValid startPos zielPos
+    | (yStart > 4 && yStart - yZiel /= 1) = False 
+    | (yStart < 5 && (abs (yStart - yZiel) + abs (xStart - xZiel) /= 1)) = False
+    | (yStart - yZiel == -1) = False
+    | otherwise = True
+        where
+            xStart = startPos !! 1
+            yStart = startPos !! 0
+            xZiel = zielPos !! 1
+            yZiel = zielPos !! 0
 
 blackSoldierValid :: [Int] -> [Int] -> Bool
-blackSoldierValid startPos zielPos = ownTerritoryValid || opponentTerritoryValid
-    where
-        --own territory only forward
-        ownTerritoryValid = startPos!!0 < 5 && startPos!!0 - zielPos!!0 == -1 
-        --opponent territory only vertical and horizonal, but no backwards
-        opponentTerritoryValid = startPos!!0 > 4 && (abs (startPos!!0 - zielPos!!0) + abs (startPos!!1 - zielPos!!1) == 1) && (startPos!!0 - zielPos!!0 /= 1)
-
+blackSoldierValid startPos zielPos
+    | (yStart < 5 && yStart - yZiel /= -1) = False 
+    | (yStart > 4 && (abs (yStart - yZiel) + abs (xStart - xZiel) /= 1)) = False
+    | (yStart - yZiel == 1) = False
+    | otherwise = True
+        where
+            xStart = startPos !! 1
+            yStart = startPos !! 0
+            xZiel = zielPos !! 1
+            yZiel = zielPos !! 0
