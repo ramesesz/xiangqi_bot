@@ -175,43 +175,34 @@ getDiagonalBlock board curr end count
         next = [head curr + 1, last curr + 1]
 
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
-getGeneralMoves player startPos zielPos =
-    if startPos == zielPos
-        then ""
-    else 
-        if canMove && doesNotResultInCheck
-            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-        else ""
+getGeneralMoves player startPos zielPos
+    | startPos == zielPos = "" 
+    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | otherwise = ""
     where
         xStart = startPos !! 1
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
+        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
 
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
-getAdvisorMoves player startPos zielPos =
-    if startPos == zielPos
-        then ""
-    else 
-        if canMove && doesNotResultInCheck
-            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-        else ""
+getAdvisorMoves player startPos zielPos
+    | startPos == zielPos = "" 
+    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | otherwise = ""
     where
         xStart = startPos !! 1
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
+        canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
     
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
-getElephantMoves board player startPos zielPos =
-    if startPos == zielPos
-        then ""
-    else 
-        if canMove && doesNotResultInCheck
-            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-        else ""
+getElephantMoves board player startPos zielPos
+    | startPos == zielPos = "" 
+    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | otherwise = ""
     where
         xStart = startPos !! 1
         yStart = startPos !! 0
