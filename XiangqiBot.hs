@@ -81,6 +81,25 @@ getAdvisorMoves player startPos zielPos =
         yZiel = zielPos !! 0
         canMove = isInPalast player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
     
+getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
+getElephantMoves board player startPos zielPos =
+    if startPos == zielPos
+        then ""
+    else 
+        if canMove && doesNotResultInCheck
+            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
+        else ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove
+            | player && (yStart < 5 || yZiel < 5) = False 
+            | not player && (yStart > 4 || yZiel > 4) = False
+            | abs (yStart - yZiel /= 2) || abs (xStart - xZiel /= 2) = False
+            | (getFigur board ([abs (yStart + yZiel)/2, abs (xStart + xZiel)/2])) /= '1' = False 
+
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
 getSoldierMoves player startPos zielPos =
     if startPos == zielPos
