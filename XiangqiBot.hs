@@ -58,11 +58,11 @@ getPos x = [getZeile (last x), getSpalte (head x)]
 calculatePos :: Int -> [Int]
 calculatePos index = [index `div` 9, index `mod` 9]
 
-getMove :: [Int] -> [Char]
-getMove pos = [getX (last pos), getY (head pos)]
+getMoveChar :: [Int] -> [Char]
+getMoveChar pos = [getX (last pos), getY (head pos)]
 
 getMoveString :: [Int] -> [Char]
-getMoveString pos = getMove(take 2 pos) ++ "-" ++ getMove(drop 2 pos)
+getMoveString pos = getMoveChar(take 2 pos) ++ "-" ++ getMoveChar(drop 2 pos)
 
 getTranslatedMove :: [Char] -> [Int]
 getTranslatedMove move = getPos (take 2 move) ++ getPos(drop 3 move)
@@ -104,7 +104,7 @@ isInPalast move isRed
     | isRed = isInPalastRed pos
     | otherwise = isInPalastBlack pos
     where
-        pos = getMove move
+        pos = getMoveChar move
 
 isInPalastRed :: [Char] -> Bool
 isInPalastRed pos |
@@ -177,7 +177,7 @@ getDiagonalBlock board curr end count
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -189,7 +189,7 @@ getGeneralMoves player startPos zielPos
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
 getAdvisorMoves player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -201,7 +201,7 @@ getAdvisorMoves player startPos zielPos
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
 getElephantMoves board player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMove startPos ++ "-" ++ getMove zielPos
+    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -212,7 +212,7 @@ getElephantMoves board player startPos zielPos
             | player && (yStart < 5 || yZiel < 5) = False 
             | not player && (yStart > 4 || yZiel > 4) = False
             | abs (yStart - yZiel /= 2) || abs (xStart - xZiel /= 2) = False
-            | (getFigur board ([abs (yStart + yZiel)/2, abs (xStart + xZiel)/2])) /= '1' = False 
+            | getFigurByPos board [(abs (yStart + yZiel)/2), (abs (xStart + xZiel)/2)] /= '1' = False 
 
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
 getSoldierMoves player startPos zielPos =
