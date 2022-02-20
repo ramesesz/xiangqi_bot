@@ -99,10 +99,12 @@ getSpalte x
 getZeile :: Char -> Int
 getZeile x = 9 - digitToInt x
 
-isInPalast :: [Char] -> Bool -> Bool
-isInPalast pos isRed
+isInPalast :: [Int] -> Bool -> Bool
+isInPalast move isRed
     | isRed = isInPalastRed pos
     | otherwise = isInPalastBlack pos
+    where
+        pos = getMove move
 
 isInPalastRed :: [Char] -> Bool
 isInPalastRed pos |
