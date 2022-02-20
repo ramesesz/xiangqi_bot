@@ -9,7 +9,7 @@ import Data.Char
 -- More modules may be imported
 
 import Util
-import GHC.RTS.Flags (ProfFlags(startHeapProfileAtStartup))
+import Data.List
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
@@ -21,33 +21,156 @@ listMoves = _listMovesImpl_ -- YOUR IMPLEMENTATION HERE
 
 
 -- YOUR IMPLEMENTATION FOLLOWS HERE
-getPosition :: Int -> Int -> Int
-getPosition  spalte zeile = spalte + (zeile * 9)
+getBoard :: [Char] -> [Char]
+getBoard x = concatMap boardConverter (head (splitOn ' ' x))
 
-getCoordinates :: Int -> (Int, Int)
---get array indices from position
-getCoordinates pos = (spalte, zeile)
+boardConverter :: Char -> [Char]
+boardConverter x
+    | x == '9' = "111111111"
+    | x == '8' = "11111111"
+    | x == '7' = "1111111"
+    | x == '6' = "111111"
+    | x == '5' = "11111"
+    | x == '4' = "1111"
+    | x == '3' = "111"
+    | x == '2' = "11"
+    | x == '/' = ""
+    | otherwise = [x]
+
+getFigur :: [Char] -> [Char] -> Char
+getFigur board pos = board !! getIndex pos
+
+getFigurByIndex :: [Char] -> Int -> Char
+getFigurByIndex board index = board !! index
+
+getFigurByPos :: [Char] -> [Int] -> Char
+getFigurByPos board pos = getFigurByIndex board (calculateIndex pos)
+
+getIndex :: [Char] -> Int
+getIndex pos = getZeile (last pos) * 9 + getSpalte (head pos) 
+
+calculateIndex :: [Int] -> Int
+calculateIndex pos = head pos * 9 + pos !! 1
+
+getPos :: [Char] -> [Int]
+getPos x = [getZeile (last x), getSpalte (head x)]
+
+calculatePos :: Int -> [Int]
+calculatePos index = [index `div` 9, index `mod` 9]
+
+getMove :: [Int] -> [Char]
+getMove pos = [getX (last pos), getY (head pos)]
+
+getMoveString :: [Int] -> [Char]
+getMoveString pos = getMove(take 2 pos) ++ "-" ++ getMove(drop 2 pos)
+
+getTranslatedMove :: [Char] -> [Int]
+getTranslatedMove move = getPos (take 2 move) ++ getPos(drop 3 move)
+
+getX :: Int -> Char 
+getX x
+    | x == 0 = 'a'
+    | x == 1 = 'b'
+    | x == 2 = 'c'
+    | x == 3 = 'd'
+    | x == 4 = 'e'
+    | x == 5 = 'f'
+    | x == 6 = 'g'
+    | x == 7 = 'h'
+    | x == 8 = 'i'
+    | otherwise = '1'
+
+getY :: Int -> Char
+getY x = intToDigit (9-x)
+
+getSpalte :: Char -> Int
+getSpalte x
+    | x == 'a' = 0
+    | x == 'b' = 1
+    | x == 'c' = 2
+    | x == 'd' = 3
+    | x == 'e' = 4
+    | x == 'f' = 5
+    | x == 'g' = 6
+    | x == 'h' = 7
+    | x == 'i' = 8
+    | otherwise = -1
+
+getZeile :: Char -> Int
+getZeile x = 9 - digitToInt x
+
+isInPalast :: [Char] -> Bool -> Bool
+isInPalast pos isRed
+    | isRed = isInPalastRed pos
+    | otherwise = isInPalastBlack pos
+
+isInPalastRed :: [Char] -> Bool
+isInPalastRed pos |
+    pos == "d0" || pos == "e0" || pos == "f0" || pos == "d1" || pos == "e1" || pos == "f1" || pos == "d2" || pos == "e2" || pos == "f2" = True
+    | otherwise = False
+
+isInPalastBlack :: [Char] -> Bool
+isInPalastBlack pos |
+    pos == "d7" || pos == "e7" || pos == "f7" || pos == "d8" || pos == "e8" || pos == "f8" || pos == "d9" || pos == "e9" || pos == "f9" = True
+    | otherwise = False
+
+getGeneralCoordinate :: [Char] -> Bool -> [Int]
+getGeneralCoordinate board isRed
+    | isRed = getGeneralCoordinateRed board
+    | otherwise = getGeneralCoordinateBlack board
+
+getGeneralCoordinateRed :: [Char] -> [Int]
+getGeneralCoordinateRed board = [y,x]
     where
-        spalte = getSpalte pos
-        zeile = getZeile pos
+        index = elemIndices 'G' board
+        x = mod (head index) 9
+        y = div (head index) 9
 
-getZeile :: Int -> Int
-getZeile pos = mod pos 9
+getGeneralCoordinateBlack :: [Char] -> [Int]
+getGeneralCoordinateBlack board = [y,x]
+    where
+        index = elemIndices 'g' board
+        x = mod (head index) 9
+        y = div (head index) 9
 
-spalteToInt :: Char -> Int
-spalteToInt x = case x of
-    'a' -> 0
-    'b' -> 1
-    'c' -> 2
-    'd' -> 3
-    'e' -> 4
-    'f' -> 5
-    'g' -> 6
-    'h' -> 7
-    'i' -> 8
+isTodesBlick :: [Char] -> Bool
+isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral 0 == 2
+    where
+        redGeneral = getGeneralCoordinate (getBoard board) True
+        blackGeneral = getGeneralCoordinate (getBoard board) False
 
-getSpalte :: Int -> Int
-getSpalte pos = div pos 10
+getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
+getVerticalBlock board curr end count
+    | last curr /= last end = -1
+    | head curr > head end = count
+    | otherwise = getVerticalBlock board next end newCount
+    where
+        currIndex = calculateIndex curr
+        currFigur = getFigurByIndex (getBoard board) currIndex
+        next = [head curr + 1, last curr]
+        newCount = if currFigur /= '1' then count + 1 else count
+
+getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
+getHorizontalBlock board curr end count
+    | head curr /= head end = -1
+    | last curr > last end = count
+    | otherwise = getHorizontalBlock board next end newCount
+    where
+        currIndex = calculateIndex curr
+        currFigur = getFigurByIndex (getBoard board) currIndex
+        newCount = if currFigur /= '1' then count + 1 else count
+        next = [head curr, last curr + 1]
+
+getDiagonalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
+getDiagonalBlock board curr end count
+    | abs (head end-head curr) /= abs (last end-last curr) = -1
+    | last curr > last end && head curr > head end = count
+    | otherwise = getDiagonalBlock board next end newCount
+    where
+        currIndex = calculateIndex curr
+        currFigur = getFigurByIndex (getBoard board) currIndex
+        newCount = if currFigur /= '1' then count + 1 else count
+        next = [head curr + 1, last curr + 1]
 
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos =
@@ -133,3 +256,4 @@ blackSoldierValid startPos zielPos = ownTerritoryValid || opponentTerritoryValid
         ownTerritoryValid = startPos!!0 < 5 && startPos!!0 - zielPos!!0 == -1 
         --opponent territory only vertical and horizonal, but no backwards
         opponentTerritoryValid = startPos!!0 > 4 && (abs (startPos!!0 - zielPos!!0) + abs (startPos!!1 - zielPos!!1) == 1) && (startPos!!0 - zielPos!!0 /= 1)
+
