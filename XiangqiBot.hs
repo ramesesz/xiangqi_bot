@@ -177,7 +177,7 @@ getDiagonalBlock board curr end count
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -189,7 +189,7 @@ getGeneralMoves player startPos zielPos
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
 getAdvisorMoves player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -201,7 +201,7 @@ getAdvisorMoves player startPos zielPos
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
 getElephantMoves board player startPos zielPos
     | startPos == zielPos = "" 
-    | canMove && doesNotResultInCheck = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
@@ -211,15 +211,16 @@ getElephantMoves board player startPos zielPos
         canMove
             | player && (yStart < 5 || yZiel < 5) = False 
             | not player && (yStart > 4 || yZiel > 4) = False
-            | abs (yStart - yZiel /= 2) || abs (xStart - xZiel /= 2) = False
-            | getFigurByPos board [(abs (yStart + yZiel)/2), (abs (xStart + xZiel)/2)] /= '1' = False 
+            | abs (yStart - yZiel) /= 2 || abs (xStart - xZiel) /= 2 = False
+            | getFigurByPos board [abs (div (yStart + yZiel) 2), abs (div (xStart + xZiel) 2)] /= '1' = False 
+            | otherwise = True
 
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
 getSoldierMoves player startPos zielPos =
     if startPos == zielPos
         then ""
     else 
-        if canMove && doesNotResultInCheck
+        if canMove
             then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
         else ""
     where
