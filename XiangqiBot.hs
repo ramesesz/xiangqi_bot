@@ -144,7 +144,7 @@ isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral 0
 getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getVerticalBlock board curr end count
     | last curr /= last end = -1
-    | head curr > head end = count
+    | head curr >= head end = count
     | otherwise = getVerticalBlock board next end newCount
     where
         currIndex = calculateIndex curr
@@ -155,7 +155,7 @@ getVerticalBlock board curr end count
 getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getHorizontalBlock board curr end count
     | head curr /= head end = -1
-    | last curr > last end = count
+    | last curr >= last end = count
     | otherwise = getHorizontalBlock board next end newCount
     where
         currIndex = calculateIndex curr
@@ -166,7 +166,7 @@ getHorizontalBlock board curr end count
 getDiagonalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getDiagonalBlock board curr end count
     | abs (head end-head curr) /= abs (last end-last curr) = -1
-    | last curr > last end && head curr > head end = count
+    | last curr >= last end && head curr >= head end = count
     | otherwise = getDiagonalBlock board next end newCount
     where
         currIndex = calculateIndex curr
