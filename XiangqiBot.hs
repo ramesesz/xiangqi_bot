@@ -13,11 +13,11 @@ import Data.List
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
-getMove = _getMoveImpl_ -- YOUR IMPLEMENTATION HERE
+getMove b = "_getMoveImpl_" -- YOUR IMPLEMENTATION HERE
 
 
 listMoves :: String -> String
-listMoves = _listMovesImpl_ -- YOUR IMPLEMENTATION HERE
+listMoves b = "_listMovesImpl_" -- YOUR IMPLEMENTATION HERE
 
 
 -- YOUR IMPLEMENTATION FOLLOWS HERE
@@ -200,7 +200,7 @@ recurseValidMoves board isRed from curr end
 
 checkMove :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
 checkMove board isRed from to
-    | moveInBoard && isValid = checkFigur
+    | moveInBoard && isValid = getFigurMove
     | otherwise = ""
     where
         xStart = from !! 1
@@ -209,6 +209,7 @@ checkMove board isRed from to
         yZiel = to !! 0
         moveInBoard = xStart >=0 && xStart <= 8 && yStart >=0 && yStart <= 9 && xZiel >=0 && xZiel <= 8 && yZiel >=0 && yZiel <= 9 
         isValid = startZielIsValid board isRed from to
+        getFigurMove = checkFigur board isRed from to
 
 startZielIsValid :: [Char] -> Bool -> [Int] -> [Int] -> Bool
 startZielIsValid board isRed from to
@@ -223,6 +224,19 @@ startZielIsValid board isRed from to
         moveBlank = figurFrom == '1'
         opponentFigur = (isRed && isLower figurFrom) || (not isRed && isUpper figurFrom)
         killOwn = (isRed && isUpper figurTo) || (not isRed && isLower figurTo)
+
+checkFigur :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
+checkFigur board isRed from to
+    | figur == 'G' || figur == 'g' = getGeneralMoves isRed from to
+    | figur == 'A' || figur == 'a' = getAdvisorMoves isRed from to
+    | figur == 'E' || figur == 'e' = getElephantMoves board isRed from to
+    | figur == 'H' || figur == 'h' = getHorseMoves board from to
+    | figur == 'R' || figur == 'r' = getRookMoves board from to
+    | figur == 'C' || figur == 'c' = getCannonMoves board from to
+    | figur == 'S' || figur == 's' = getSoldierMoves isRed from to
+    | otherwise = ""
+    where
+        figur = getFigurByPos (getBoard board) from
 
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos
@@ -294,8 +308,8 @@ getRookMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | yStart - yZiel == 0 && (getVerticalBlock board startPos zielPos 0) /= 1 = False
-            | xStart - xZiel == 0 && (getHorizontalBlock board startPos zielPos 0) /= 1 = False
+            | xStart - xZiel == 0 && (getVerticalBlock board startPos zielPos 0) /= 1 = False
+            | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos 0) /= 1 = False
             | otherwise = True
 
 getCannonMoves :: [Char] -> [Int] -> [Int] -> String
@@ -352,3 +366,14 @@ blackSoldierValid startPos zielPos
             yStart = startPos !! 0
             xZiel = zielPos !! 1
             yZiel = zielPos !! 0
+
+
+-- main :: IO ()
+-- main = do
+--     let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
+--     print (validMoves (getBoard start) True)
+--     print (getMoveChar [9, 1])
+--     -- print (getFigurByIndex (getBoard start) 89)
+--     print (length (getBoard start))
+--     print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
+--     print (getVerticalBlock (getBoard start) [9,0] [6,0] 0)
