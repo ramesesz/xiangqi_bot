@@ -143,8 +143,8 @@ isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGener
 
 getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int 
 getVerticalBlock board start end
-    | head start > head end = recurseVerticalBlock (getBoard board) end [head start-1, last start]
-    | otherwise = recurseVerticalBlock (getBoard board) start [head end-1, last end]
+    | head start > head end = recurseVerticalBlock (getBoard board) [head end+1, last end] [head start-1, last start]
+    | otherwise = recurseVerticalBlock (getBoard board) [head start+1, last start] [head end-1, last end]
 
 recurseVerticalBlock :: [Char] -> [Int] -> [Int] -> Int
 recurseVerticalBlock board curr end
@@ -158,8 +158,8 @@ recurseVerticalBlock board curr end
 
 getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int 
 getHorizontalBlock board start end
-    | last start > last end = recurseHorizontalBlock (getBoard board) end [head start, last start-1]
-    | otherwise = recurseHorizontalBlock (getBoard board) start [head end, last end-1]
+    | last start > last end = recurseHorizontalBlock (getBoard board) [head end, last end+1] [head start, last start-1]
+    | otherwise = recurseHorizontalBlock (getBoard board) [head start, last start+1] [head end, last end-1]
 
 recurseHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int
 recurseHorizontalBlock board curr end
@@ -185,7 +185,7 @@ getValidMoves board isRed index = recurseValidMoves board isRed index 0 89
 
 recurseValidMoves :: [Char] -> Bool -> Int -> Int -> Int -> [Char]
 recurseValidMoves board isRed from curr end
-    | curr == end = ""
+    | curr == end = checkMove board isRed moveFrom moveTo
     | otherwise = checkMove board isRed moveFrom moveTo ++ recurseValidMoves board isRed from next end
     where
         next = curr + 1
@@ -242,7 +242,7 @@ getGeneralMoves player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
+        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 0
 
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
 getAdvisorMoves player startPos zielPos
@@ -302,8 +302,8 @@ getRookMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | xStart - xZiel == 0 && (getVerticalBlock board startPos zielPos) /= 1 = False
-            | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos) /= 1 = False
+            | xStart - xZiel == 0 && (getVerticalBlock board startPos zielPos) /= 0 = False
+            | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos) /= 0 = False
             | otherwise = True
 
 getCannonMoves :: [Char] -> [Int] -> [Int] -> String
@@ -317,8 +317,8 @@ getCannonMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | getFigurByPos board [yZiel, xZiel] == '1' && ((getVerticalBlock board startPos zielPos) /= 1 && (getHorizontalBlock board startPos zielPos) /= 1) = False --if move weg zum Ziel have to be clear
-            | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos) /= 2 && (getHorizontalBlock board startPos zielPos) /= 2) = False
+            | getFigurByPos board [yZiel, xZiel] == '1' && ((getVerticalBlock board startPos zielPos) /= 0 && (getHorizontalBlock board startPos zielPos) /= 0) = False --if move weg zum Ziel have to be clear
+            | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos) /= 1 && (getHorizontalBlock board startPos zielPos) /= 1) = False
             | otherwise = True
 
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
@@ -374,3 +374,4 @@ blackSoldierValid startPos zielPos
 --     print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
 --     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
 --     print (validMoves (getBoard blah) True)
+--     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
