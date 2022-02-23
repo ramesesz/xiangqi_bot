@@ -176,7 +176,7 @@ getDiagonalBlock board curr end count
 
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos
-    | startPos == zielPos = "" 
+    | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
@@ -188,7 +188,7 @@ getGeneralMoves player startPos zielPos
 
 getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
 getAdvisorMoves player startPos zielPos
-    | startPos == zielPos = "" 
+    | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
@@ -197,10 +197,10 @@ getAdvisorMoves player startPos zielPos
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
         canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
-    
+
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
 getElephantMoves board player startPos zielPos
-    | startPos == zielPos = "" 
+    | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
@@ -215,14 +215,43 @@ getElephantMoves board player startPos zielPos
             | getFigurByPos board [abs (div (yStart + yZiel) 2), abs (div (xStart + xZiel) 2)] /= '1' = False 
             | otherwise = True
 
+getHorseMoves :: [Char] -> [Int] -> [Int] -> String
+getHorseMoves board startPos zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | otherwise = ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove
+            | yZiel - yStart == -2 && getFigurByPos board [yStart - 1, xStart] /= '1' = False
+            | xZiel - xStart == 2 && getFigurByPos board [yStart, xStart + 1] /= '1' = False
+            | yZiel - yStart == 2 && getFigurByPos board [yStart + 1, xStart] /= '1' = False
+            | xZiel - xStart == -2 && getFigurByPos board [yStart, xStart - 1] /= '1' = False
+            | abs (yStart - yZiel) == 1 && abs (xStart - xZiel) == 2 = True
+            | abs (yStart - yZiel) == 2 && abs (xStart - xZiel) == 1 = True
+            | otherwise = False
+
+getRookMoves :: [Char] -> [Int] -> [Int] -> String
+getRookMoves board startPos zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | otherwise = ""
+    where
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove
+            | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
+            | 
+
+
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
-getSoldierMoves player startPos zielPos =
-    if startPos == zielPos
-        then ""
-    else 
-        if canMove
-            then "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
-        else ""
+getSoldierMoves player startPos zielPos
+    | startPos == zielPos = "" --nanti dibikin checkmove
+    | canMove = "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
+    | otherwise = ""
     where
         xStart = startPos !! 1
         yStart = startPos !! 0
@@ -232,6 +261,7 @@ getSoldierMoves player startPos zielPos =
             | (xStart - xZiel /= 0) && (yStart - yZiel /= 0) = False --either vertical or horizontal
             | player = redSoldierValid startPos zielPos 
             | not player = blackSoldierValid startPos zielPos
+            | otherwise = False
             
 redSoldierValid :: [Int] -> [Int] -> Bool
 redSoldierValid startPos zielPos
