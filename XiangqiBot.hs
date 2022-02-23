@@ -136,46 +136,40 @@ getGeneralCoordinateBlack board = [y,x]
         y = div (head index) 9
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral 0 == 1
+isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 1
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
 
-getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
-getVerticalBlock board curr end count
-    | head curr > head end && count == 0 = getVerticalBlock board end curr count
+getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int 
+getVerticalBlock board start end
+    | head start > head end = recurseVerticalBlock (getBoard board) end [head start-1, last start]
+    | otherwise = recurseVerticalBlock (getBoard board) start [head end-1, last end]
+
+recurseVerticalBlock :: [Char] -> [Int] -> [Int] -> Int
+recurseVerticalBlock board curr end
     | last curr /= last end = -1
-    | head curr >= head end = count
-    | otherwise = getVerticalBlock board next end newCount
+    | head curr > head end = 0
+    | otherwise = if currFigur /= '1' then recurseVerticalBlock board next end + 1 else recurseVerticalBlock board next end
     where
         currIndex = calculateIndex curr
         currFigur = getFigurByIndex (getBoard board) currIndex
         next = [head curr + 1, last curr]
-        newCount = if currFigur /= '1' then count + 1 else count
 
-getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
-getHorizontalBlock board curr end count
-    | last curr > last end && count == 0 = getHorizontalBlock board end curr count
+getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int 
+getHorizontalBlock board start end
+    | last start > last end = recurseHorizontalBlock (getBoard board) end [head start, last start-1]
+    | otherwise = recurseHorizontalBlock (getBoard board) start [head end, last end-1]
+
+recurseHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int
+recurseHorizontalBlock board curr end
     | head curr /= head end = -1
-    | last curr >= last end = count
-    | otherwise = getHorizontalBlock board next end newCount
+    | last curr > last end = 0
+    | otherwise = if currFigur/='1' then recurseHorizontalBlock board next end + 1 else recurseHorizontalBlock board next end
     where
         currIndex = calculateIndex curr
         currFigur = getFigurByIndex (getBoard board) currIndex
-        newCount = if currFigur /= '1' then count + 1 else count
         next = [head curr, last curr + 1]
-
-getDiagonalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
-getDiagonalBlock board curr end count
-    | last curr > last end && head curr > head end && count == 0 = getDiagonalBlock board end curr count
-    | abs (head end-head curr) /= abs (last end-last curr) = -1
-    | last curr >= last end && head curr >= head end = count
-    | otherwise = getDiagonalBlock board next end newCount
-    where
-        currIndex = calculateIndex curr
-        currFigur = getFigurByIndex (getBoard board) currIndex
-        newCount = if currFigur /= '1' then count + 1 else count
-        next = [head curr + 1, last curr + 1]
 
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
@@ -308,8 +302,8 @@ getRookMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | xStart - xZiel == 0 && (getVerticalBlock board startPos zielPos 0) /= 1 = False
-            | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos 0) /= 1 = False
+            | xStart - xZiel == 0 && (getVerticalBlock board startPos zielPos) /= 1 = False
+            | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos) /= 1 = False
             | otherwise = True
 
 getCannonMoves :: [Char] -> [Int] -> [Int] -> String
@@ -323,8 +317,8 @@ getCannonMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | getFigurByPos board [yZiel, xZiel] == '1' && ((getVerticalBlock board startPos zielPos 0) /= 1 || (getHorizontalBlock board startPos zielPos 0) /= 1) = False --if move weg zum Ziel have to be clear
-            | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos 0) /= 2 || (getHorizontalBlock board startPos zielPos 0) /= 2) = False
+            | getFigurByPos board [yZiel, xZiel] == '1' && ((getVerticalBlock board startPos zielPos) /= 1 && (getHorizontalBlock board startPos zielPos) /= 1) = False --if move weg zum Ziel have to be clear
+            | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos) /= 2 && (getHorizontalBlock board startPos zielPos) /= 2) = False
             | otherwise = True
 
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
@@ -371,9 +365,12 @@ blackSoldierValid startPos zielPos
 -- main :: IO ()
 -- main = do
 --     let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
---     print (validMoves (getBoard start) True)
+--     let blah = "9/9/9/9/9/9/S8/9/9/R8"
+--     print (validMoves (getBoard start) False)
 --     print (getMoveChar [9, 1])
 --     -- print (getFigurByIndex (getBoard start) 89)
 --     print (length (getBoard start))
 --     print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
---     print (getVerticalBlock (getBoard start) [9,0] [6,0] 0)
+--     print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
+--     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
+--     print (validMoves (getBoard blah) True)
