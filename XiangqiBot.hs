@@ -24,6 +24,15 @@ listMoves b = "_listMovesImpl_" -- YOUR IMPLEMENTATION HERE
 getBoard :: [Char] -> [Char]
 getBoard x = concatMap boardConverter (head (splitOn ' ' x))
 
+--requires getBoard string
+modifyBoard :: [Char] -> [Int] -> [Int] -> [Char]
+modifyBoard board start ziel = modifyBoard2 newBoard start ziel
+    where
+        newBoard = take (calculateIndex ziel) board ++ [getFigurByPos board start] ++ drop (calculateIndex ziel+1) board
+
+modifyBoard2 :: [Char] -> [Int] -> [Int] -> [Char]
+modifyBoard2 board start ziel = take (calculateIndex start) board ++ ['1'] ++ drop (calculateIndex start+1) board
+
 boardConverter :: Char -> [Char]
 boardConverter x
     | x == '9' = "111111111"
