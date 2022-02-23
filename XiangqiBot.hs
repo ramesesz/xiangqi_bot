@@ -136,13 +136,14 @@ getGeneralCoordinateBlack board = [y,x]
         y = div (head index) 9
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral 0 == 2
+isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral 0 == 1
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
 
 getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getVerticalBlock board curr end count
+    | head curr > head end && count == 0 = getVerticalBlock board end curr count
     | last curr /= last end = -1
     | head curr >= head end = count
     | otherwise = getVerticalBlock board next end newCount
@@ -154,6 +155,7 @@ getVerticalBlock board curr end count
 
 getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getHorizontalBlock board curr end count
+    | last curr > last end && count == 0 = getHorizontalBlock board end curr count
     | head curr /= head end = -1
     | last curr >= last end = count
     | otherwise = getHorizontalBlock board next end newCount
@@ -165,6 +167,7 @@ getHorizontalBlock board curr end count
 
 getDiagonalBlock :: [Char] -> [Int] -> [Int] -> Int -> Int
 getDiagonalBlock board curr end count
+    | last curr > last end && head curr > head end && count == 0 = getDiagonalBlock board end curr count
     | abs (head end-head curr) /= abs (last end-last curr) = -1
     | last curr >= last end && head curr >= head end = count
     | otherwise = getDiagonalBlock board next end newCount
@@ -215,10 +218,8 @@ startZielIsValid board isRed from to
     | killOwn = False
     | otherwise = True
     where
-        moveFrom = calculateIndex from
-        moveTo = calculateIndex to
-        figurFrom = getFigurByIndex (getBoard board) moveFrom
-        figurTo = getFigurByIndex (getBoard board) moveTo
+        figurFrom = getFigurByPos (getBoard board) from
+        figurTo = getFigurByPos (getBoard board) to
         moveBlank = figurFrom == '1'
         opponentFigur = (isRed && isLower figurFrom) || (not isRed && isUpper figurFrom)
         killOwn = (isRed && isUpper figurTo) || (not isRed && isLower figurTo)
