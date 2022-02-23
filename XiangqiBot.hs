@@ -294,13 +294,29 @@ getRookMoves board startPos zielPos
         yZiel = zielPos !! 0
         canMove
             | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
-            | 
+            | yStart - yZiel == 0 && (getVerticalBlock board startPos zielPos 0) /= 1 = False
+            | xStart - xZiel == 0 && (getHorizontalBlock board startPos zielPos 0) /= 1 = False
+            | otherwise = True
 
+getCannonMoves :: [Char] -> [Int] -> [Int] -> String
+getCannonMoves board startPos zielPos
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
+    | otherwise = "" 
+    where 
+        xStart = startPos !! 1
+        yStart = startPos !! 0
+        xZiel = zielPos !! 1
+        yZiel = zielPos !! 0
+        canMove
+            | yStart - yZiel /= 0 && xStart - xZiel /= 0 = False --can only move hor or vert
+            | getFigurByPos board [yZiel, xZiel] == '1' && ((getVerticalBlock board startPos zielPos 0) /= 1 || (getHorizontalBlock board startPos zielPos 0) /= 1) = False --if move weg zum Ziel have to be clear
+            | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos 0) /= 2 || (getHorizontalBlock board startPos zielPos 0) /= 2) = False
+            | otherwise = True
 
 getSoldierMoves :: Bool -> [Int] -> [Int] -> String
 getSoldierMoves player startPos zielPos
     | startPos == zielPos = "" --nanti dibikin checkmove
-    | canMove = "," ++ [chr (startPos !! 1 + 97)] ++ [intToDigit (9 - startPos!!0)] ++ "-" ++ [chr (zielPos !! 1 + 97)] ++ [intToDigit (9-zielPos!!0)]
+    | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
         xStart = startPos !! 1
