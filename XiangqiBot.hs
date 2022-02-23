@@ -174,6 +174,55 @@ getDiagonalBlock board curr end count
         newCount = if currFigur /= '1' then count + 1 else count
         next = [head curr + 1, last curr + 1]
 
+-- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
+-- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
+
+tryIndices :: [Int]
+tryIndices = [0..89]
+
+validMoves :: [Char] -> Bool -> [Char]
+validMoves board isRed = concatMap (getValidMoves board isRed) tryIndices
+
+getValidMoves :: [Char] -> Bool -> Int -> [Char]
+getValidMoves board isRed index = recurseValidMoves board isRed index 0 89
+
+recurseValidMoves :: [Char] -> Bool -> Int -> Int -> Int -> [Char]
+recurseValidMoves board isRed from curr end
+    | curr == end = ""
+    | otherwise = checkMove board isRed moveFrom moveTo ++ recurseValidMoves board isRed from next end
+    where
+        next = curr + 1
+        moveFrom = calculatePos from
+        moveTo = calculatePos curr
+
+checkMove :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
+checkMove board isRed from to
+    | moveInBoard && isValid = checkFigur
+    | otherwise = ""
+    where
+        xStart = from !! 1
+        yStart = from !! 0
+        xZiel = to !! 1
+        yZiel = to !! 0
+        moveInBoard = xStart >=0 && xStart <= 8 && yStart >=0 && yStart <= 9 && xZiel >=0 && xZiel <= 8 && yZiel >=0 && yZiel <= 9 
+        isValid = startZielIsValid board isRed from to
+
+startZielIsValid :: [Char] -> Bool -> [Int] -> [Int] -> Bool
+startZielIsValid board isRed from to
+    | from == to = False
+    | moveBlank = False
+    | opponentFigur = False 
+    | killOwn = False
+    | otherwise = True
+    where
+        moveFrom = calculateIndex from
+        moveTo = calculateIndex to
+        figurFrom = getFigurByIndex (getBoard board) moveFrom
+        figurTo = getFigurByIndex (getBoard board) moveTo
+        moveBlank = figurFrom == '1'
+        opponentFigur = (isRed && isLower figurFrom) || (not isRed && isUpper figurFrom)
+        killOwn = (isRed && isUpper figurTo) || (not isRed && isLower figurTo)
+
 getGeneralMoves :: Bool -> [Int] -> [Int] -> String
 getGeneralMoves player startPos zielPos
     | startPos == zielPos = "" 
