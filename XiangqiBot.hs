@@ -171,6 +171,22 @@ recurseHorizontalBlock board curr end
         currFigur = getFigurByIndex (getBoard board) currIndex
         next = [head curr, last curr + 1]
 
+isCheck :: [Char] -> Bool -> Bool
+isCheck board isRed = recurseCheck (getBoard board) isRed (getGeneralCoordinate (getBoard board) isRed) 0 89
+
+-- kalau checkMove gak kosong, berarti ga check
+-- kalau semuanya kosong berarti check
+
+recurseCheck :: [Char] -> Bool -> [Int] -> Int -> Int -> Bool
+recurseCheck board isRed general curr end
+    | not (null currCheck) = False
+    | curr == end = not (null currCheck)
+    | otherwise = not (null currCheck) && recurseCheck board isRed general next end
+    where 
+        currCheck = checkMove board isRed moveFrom general
+        next = curr + 1
+        moveFrom = calculatePos curr
+
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
 
@@ -362,16 +378,19 @@ blackSoldierValid startPos zielPos
             yZiel = zielPos !! 0
 
 
--- main :: IO ()
--- main = do
---     let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
---     let blah = "9/9/9/9/9/9/S8/9/9/R8"
---     print (validMoves (getBoard start) False)
---     print (getMoveChar [9, 1])
---     -- print (getFigurByIndex (getBoard start) 89)
---     print (length (getBoard start))
---     print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
---     print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
---     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
---     print (validMoves (getBoard blah) True)
---     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
+main :: IO ()
+main = do
+    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
+    let blah = "9/9/9/9/9/9/S8/9/9/R8"
+    let check = "2R6/3R3g1/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
+    print (getBoard start)
+    print (validMoves (getBoard start) False)
+    print (getMoveChar [9, 1])
+    -- print (getFigurByIndex (getBoard start) 89)
+    print (length (getBoard start))
+    print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
+    print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
+    print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
+    print (validMoves (getBoard blah) True)
+    print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
+    print (isCheck (getBoard check) False)
