@@ -13,12 +13,22 @@ import Data.List
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
-getMove b = "_getMoveImpl_" -- YOUR IMPLEMENTATION HERE
-
+getMove b = final
+    where
+        moves = splitOn ',' (listMoves b)
+        move = last moves
+        final
+            | last move == ']' = init move
+            | head move == '[' = tail move 
+            | otherwise = move
 
 listMoves :: String -> String
-listMoves b = "_listMovesImpl_" -- YOUR IMPLEMENTATION HERE
-
+listMoves b = "[" ++ tail (validMoves board isRed) ++ "]"
+    where
+        splitted = splitOn ' ' b
+        board = getBoard (head splitted)
+        color = last splitted
+        isRed = color == "r"
 
 -- YOUR IMPLEMENTATION FOLLOWS HERE
 getBoard :: [Char] -> [Char]
@@ -389,7 +399,7 @@ blackSoldierValid startPos zielPos
 
 main :: IO ()
 main = do
-    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
+    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR b"
     let blah = "9/9/9/9/9/9/S8/9/9/R8"
     let check = "2R6/3R3g1/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
     print (getBoard start)
@@ -403,3 +413,5 @@ main = do
     print (validMoves (getBoard blah) True)
     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
     print (isCheck (getBoard check) True)
+    print (listMoves start)
+    print (getMove start)
