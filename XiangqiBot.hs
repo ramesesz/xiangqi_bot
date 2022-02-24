@@ -256,18 +256,27 @@ startZielIsValid board isRed from to
         opponentFigur = (isRed && isLower figurFrom) || (not isRed && isUpper figurFrom)
         killOwn = (isRed && isUpper figurTo) || (not isRed && isLower figurTo)
 
+clearBlickUndCheck :: [Char] -> Bool -> Bool
+clearBlickUndCheck board isRed
+    | isCheck board isRed = False
+    | isTodesBlick board = False
+    | otherwise = True
+
 checkFigur :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
 checkFigur board isRed from to
+    -- | isCheck newBoard isRed || isTodesBlick newBoard = ""
     | figur == 'G' || figur == 'g' = getGeneralMoves board isRed from to
     | figur == 'A' || figur == 'a' = getAdvisorMoves board isRed from to
     | figur == 'E' || figur == 'e' = getElephantMoves board isRed from to
-    | figur == 'H' || figur == 'h' = getHorseMoves board from to
-    | figur == 'R' || figur == 'r' = getRookMoves board from to
-    | figur == 'C' || figur == 'c' = getCannonMoves board from to
+    | figur == 'H' || figur == 'h' = getHorseMoves board isRed from to
+    | figur == 'R' || figur == 'r' = getRookMoves board isRed from to
+    | figur == 'C' || figur == 'c' = getCannonMoves board isRed from to
     | figur == 'S' || figur == 's' = getSoldierMoves board isRed from to
     | otherwise = ""
     where
         figur = getFigurByPos (getBoard board) from
+        -- convertedBoard = getBoard board
+        -- newBoard = modifyBoard convertedBoard from to
 
 getGeneralMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
 getGeneralMoves board player startPos zielPos
@@ -279,7 +288,7 @@ getGeneralMoves board player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
+        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1 && clearBlickUndCheck (modifyBoard (getBoard board) startPos zielPos) player
 
 getAdvisorMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
 getAdvisorMoves board player startPos zielPos
@@ -291,7 +300,7 @@ getAdvisorMoves board player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
+        canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1 && clearBlickUndCheck (modifyBoard (getBoard board) startPos zielPos) player
 
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
 getElephantMoves board player startPos zielPos
@@ -307,11 +316,11 @@ getElephantMoves board player startPos zielPos
             | player && (yStart < 5 || yZiel < 5) = False 
             | not player && (yStart > 4 || yZiel > 4) = False
             | abs (yStart - yZiel) /= 2 || abs (xStart - xZiel) /= 2 = False
-            | getFigurByPos board [abs (div (yStart + yZiel) 2), abs (div (xStart + xZiel) 2)] /= '1' = False 
+            | getFigurByPos board [abs (div (yStart + yZiel) 2), abs (div (xStart + xZiel) 2)] /= '1' = False
             | otherwise = True
 
-getHorseMoves :: [Char] -> [Int] -> [Int] -> String
-getHorseMoves board startPos zielPos
+getHorseMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getHorseMoves board player startPos zielPos
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
@@ -328,8 +337,8 @@ getHorseMoves board startPos zielPos
             | abs (yStart - yZiel) == 2 && abs (xStart - xZiel) == 1 = True
             | otherwise = False
 
-getRookMoves :: [Char] -> [Int] -> [Int] -> String
-getRookMoves board startPos zielPos
+getRookMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getRookMoves board player startPos zielPos
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
     where
@@ -343,8 +352,8 @@ getRookMoves board startPos zielPos
             | yStart - yZiel == 0 && (getHorizontalBlock board startPos zielPos) /= 0 = False
             | otherwise = True
 
-getCannonMoves :: [Char] -> [Int] -> [Int] -> String
-getCannonMoves board startPos zielPos
+getCannonMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getCannonMoves board player startPos zielPos
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = "" 
     where 
