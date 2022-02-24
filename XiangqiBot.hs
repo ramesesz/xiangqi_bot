@@ -43,6 +43,16 @@ modifyBoard board start ziel = modifyBoard2 newBoard start ziel
 modifyBoard2 :: [Char] -> [Int] -> [Int] -> [Char]
 modifyBoard2 board start ziel = take (calculateIndex start) board ++ ['1'] ++ drop (calculateIndex start+1) board
 
+createNewBoard :: [Char] -> [Int] -> [Int] -> [Char]
+createNewBoard board start ziel = replacer startIndex '1' (replacer zielIndex figur (getBoard board))
+    where
+        figur = getFigurByPos (getBoard board) start
+        startIndex = calculateIndex start
+        zielIndex = calculateIndex ziel
+
+replacer :: Int -> Char -> [Char] -> [Char]
+replacer index char board = take index board ++ char : drop (index + 1) board
+
 boardConverter :: Char -> [Char]
 boardConverter x
     | x == '9' = "111111111"
@@ -144,18 +154,28 @@ getGeneralCoordinateRed :: [Char] -> [Int]
 getGeneralCoordinateRed board = [y,x]
     where
         index = elemIndices 'G' board
-        x = mod (head index) 9
-        y = div (head index) 9
+        x
+            | length index > 0 = mod (head index) 9
+            | otherwise = -1
+        y 
+            | length index > 0 = div (head index) 9
+            | otherwise = -1
 
 getGeneralCoordinateBlack :: [Char] -> [Int]
 getGeneralCoordinateBlack board = [y,x]
     where
         index = elemIndices 'g' board
-        x = mod (head index) 9
-        y = div (head index) 9
+        x
+            | length index > 0 = mod (head index) 9
+            | otherwise = -1
+        y 
+            | length index > 0 = div (head index) 9
+            | otherwise = -1
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral == 0
+isTodesBlick board
+    | blackGeneral == [-1,-1] || redGeneral == [-1,-1] = True
+    | otherwise = getVerticalBlock (getBoard board) blackGeneral redGeneral == 0
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
@@ -202,13 +222,34 @@ recurseCheck board isRed curr end
     | not (null currCheck) = currCheck
     | otherwise = currCheck ++ recurseCheck board isRed next end
     where 
-        currCheck = checkMove board (not isRed) moveFrom moveTo
+        currCheck
+            | moveTo == [-1,-1] = getMoveChar moveFrom ++ "-" ++ getMoveChar moveTo
+            | otherwise = checkMove board (not isRed) moveFrom moveTo
         next = curr + 1
         moveFrom = calculatePos curr
         moveTo = getGeneralCoordinate (getBoard board) isRed
 
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
+
+filterValidMoves :: [Char] -> Bool -> [Char]
+filterValidMoves board isRed = final
+    where
+        moves = splitOn ',' (validMoves board isRed)
+        fixed = tail moves
+        final = concatMap (filterMove board isRed) fixed
+
+filterMove :: [Char] -> Bool -> [Char] -> [Char]
+filterMove board isRed move
+    | clear = "," ++ move
+    | otherwise = ""
+    where
+        newMove = getTranslatedMove move
+        moveFrom = take 2 newMove
+        moveTo = drop 2 newMove
+        newBoard = createNewBoard (getBoard board) moveFrom moveTo
+        clear = clearBlickUndCheck newBoard isRed
+        
 
 tryIndices :: [Int]
 tryIndices = [0..89]
@@ -288,7 +329,7 @@ getGeneralMoves board player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1 && clearBlickUndCheck (modifyBoard (getBoard board) startPos zielPos) player
+        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
 
 getAdvisorMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
 getAdvisorMoves board player startPos zielPos
@@ -300,7 +341,7 @@ getAdvisorMoves board player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1 && clearBlickUndCheck (modifyBoard (getBoard board) startPos zielPos) player
+        canMove = isInPalast zielPos player && (abs (xZiel - xStart)) == 1 && (abs (yZiel - yStart)) == 1
 
 getElephantMoves :: String -> Bool -> [Int] -> [Int] -> String
 getElephantMoves board player startPos zielPos
@@ -406,20 +447,5 @@ blackSoldierValid startPos zielPos
             yStart = startPos !! 0
             xZiel = zielPos !! 1
             yZiel = zielPos !! 0
-
-
-main :: IO ()
-main = do
-    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR b"
-    let blah = "9/9/9/9/9/9/S8/9/9/R8"
-    let check = "2R1g4/3R5/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
-    let brb = "4g4/9/9/9/9/9/9/9/9/4G4"
-    print ((getVerticalBlock (getBoard brb) (getPos "e0") (getPos "e9")) == 0)
-    print (getMoveChar (getGeneralCoordinate (getBoard brb) True))
-    print (getMoveChar (getGeneralCoordinate (getBoard brb) False))
-    print (isTodesBlick (getBoard brb))
-    print (isCheck (getBoard brb) False)
-    -- print (getBoard start)
-    print (getBoard start)
-    print (validMoves (getBoard start) True)
+            
     
