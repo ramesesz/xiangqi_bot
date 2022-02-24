@@ -13,12 +13,22 @@ import Data.List
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
-getMove b = "_getMoveImpl_" -- YOUR IMPLEMENTATION HERE
-
+getMove b = final
+    where
+        moves = splitOn ',' (listMoves b)
+        move = last moves
+        final
+            | last move == ']' = init move
+            | head move == '[' = tail move 
+            | otherwise = move
 
 listMoves :: String -> String
-listMoves b = "_listMovesImpl_" -- YOUR IMPLEMENTATION HERE
-
+listMoves b = "[" ++ tail (validMoves board isRed) ++ "]"
+    where
+        splitted = splitOn ' ' b
+        board = getBoard (head splitted)
+        color = last splitted
+        isRed = color == "r"
 
 -- YOUR IMPLEMENTATION FOLLOWS HERE
 getBoard :: [Char] -> [Char]
@@ -145,7 +155,7 @@ getGeneralCoordinateBlack board = [y,x]
         y = div (head index) 9
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 1
+isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 0
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
@@ -179,6 +189,23 @@ recurseHorizontalBlock board curr end
         currIndex = calculateIndex curr
         currFigur = getFigurByIndex (getBoard board) currIndex
         next = [head curr, last curr + 1]
+
+isCheck :: [Char] -> Bool -> Bool
+isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 89))
+
+-- kalau checkMove gak kosong, berarti ga check
+-- kalau semuanya kosong berarti check
+
+recurseCheck :: [Char] -> Bool -> Int -> Int -> [Char]
+recurseCheck board isRed curr end
+    | curr == end = currCheck
+    | not (null currCheck) = currCheck
+    | otherwise = currCheck ++ recurseCheck board isRed next end
+    where 
+        currCheck = checkMove board (not isRed) moveFrom moveTo
+        next = curr + 1
+        moveFrom = calculatePos curr
+        moveTo = getGeneralCoordinate (getBoard board) isRed
 
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
@@ -371,16 +398,22 @@ blackSoldierValid startPos zielPos
             yZiel = zielPos !! 0
 
 
--- main :: IO ()
--- main = do
---     let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r"
---     let blah = "9/9/9/9/9/9/S8/9/9/R8"
---     print (validMoves (getBoard start) False)
---     print (getMoveChar [9, 1])
---     -- print (getFigurByIndex (getBoard start) 89)
---     print (length (getBoard start))
---     print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
---     print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
---     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
---     print (validMoves (getBoard blah) True)
---     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
+main :: IO ()
+main = do
+    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR b"
+    let blah = "9/9/9/9/9/9/S8/9/9/R8"
+    let check = "2R6/3R3g1/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
+    print (getBoard start)
+    print (validMoves (getBoard start) False)
+    print (getMoveChar [9, 1])
+    -- print (getFigurByIndex (getBoard start) 89)
+    print (length (getBoard start))
+    print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
+    print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
+    print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
+    print (validMoves (getBoard blah) True)
+    print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
+    print (isCheck (getBoard check) False)
+    print (listMoves start)
+    print (getMove start)
+    print (listMoves "rheagaehr/9/1c5c1/2s3s1s/s3S4/9/S1S3S1S/1C5C1/9/RHEAGAEHR r")
