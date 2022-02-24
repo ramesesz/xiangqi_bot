@@ -155,7 +155,7 @@ getGeneralCoordinateBlack board = [y,x]
         y = div (head index) 9
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 0
+isTodesBlick board = getVerticalBlock (getBoard board) blackGeneral redGeneral == 0
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
@@ -191,7 +191,7 @@ recurseHorizontalBlock board curr end
         next = [head curr, last curr + 1]
 
 isCheck :: [Char] -> Bool -> Bool
-isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 89))
+isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 (length (getBoard board))))
 
 -- kalau checkMove gak kosong, berarti ga check
 -- kalau semuanya kosong berarti check
@@ -217,16 +217,17 @@ validMoves :: [Char] -> Bool -> [Char]
 validMoves board isRed = concatMap (getValidMoves board isRed) tryIndices
 
 getValidMoves :: [Char] -> Bool -> Int -> [Char]
-getValidMoves board isRed index = recurseValidMoves board isRed index 0 89
+getValidMoves board isRed index = recurseValidMoves board isRed index 0 (length (getBoard board))
 
 recurseValidMoves :: [Char] -> Bool -> Int -> Int -> Int -> [Char]
 recurseValidMoves board isRed from curr end
-    | curr == end = checkMove board isRed moveFrom moveTo
-    | otherwise = checkMove board isRed moveFrom moveTo ++ recurseValidMoves board isRed from next end
+    | curr == end = moveStr
+    | otherwise = moveStr ++ recurseValidMoves board isRed from next end
     where
         next = curr + 1
         moveFrom = calculatePos from
         moveTo = calculatePos curr
+        moveStr = checkMove board isRed moveFrom moveTo
 
 checkMove :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
 checkMove board isRed from to
@@ -278,7 +279,7 @@ getGeneralMoves board player startPos zielPos
         yStart = startPos !! 0
         xZiel = zielPos !! 1
         yZiel = zielPos !! 0
-        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 0
+        canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 1
 
 getAdvisorMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
 getAdvisorMoves board player startPos zielPos
@@ -402,18 +403,12 @@ main :: IO ()
 main = do
     let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR b"
     let blah = "9/9/9/9/9/9/S8/9/9/R8"
-    let check = "2R6/3R3g1/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
+    let check = "2R1g4/3R5/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
+    let brb = "4g4/9/9/9/9/9/9/9/9/4G4"
+    print ((getVerticalBlock (getBoard brb) (getPos "e0") (getPos "e9")) == 0)
+    print (getMoveChar (getGeneralCoordinate (getBoard brb) True))
+    print (getMoveChar (getGeneralCoordinate (getBoard brb) False))
+    print (isTodesBlick (getBoard brb))
+    print (isCheck (getBoard brb) False)
+    -- print (getBoard start)
     print (getBoard start)
-    print (validMoves (getBoard start) False)
-    print (getMoveChar [9, 1])
-    -- print (getFigurByIndex (getBoard start) 89)
-    print (length (getBoard start))
-    print (getFigurByIndex (getBoard start) ((length (getBoard start))-1))
-    print (getVerticalBlock (getBoard start) (getPos "a6") (getPos "a9"))
-    print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
-    print (validMoves (getBoard blah) True)
-    print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
-    print (isCheck (getBoard check) False)
-    print (listMoves start)
-    print (getMove start)
-    print (listMoves "rheagaehr/9/1c5c1/2s3s1s/s3S4/9/S1S3S1S/1C5C1/9/RHEAGAEHR r")
