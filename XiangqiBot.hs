@@ -43,6 +43,16 @@ modifyBoard board start ziel = modifyBoard2 newBoard start ziel
 modifyBoard2 :: [Char] -> [Int] -> [Int] -> [Char]
 modifyBoard2 board start ziel = take (calculateIndex start) board ++ ['1'] ++ drop (calculateIndex start+1) board
 
+createNewBoard :: [Char] -> [Int] -> [Int] -> [Char]
+createNewBoard board start ziel = replacer startIndex '1' (replacer zielIndex figur (getBoard board))
+    where
+        figur = getFigurByPos (getBoard board) start
+        startIndex = calculateIndex start
+        zielIndex = calculateIndex ziel
+
+replacer :: Int -> Char -> [Char] -> [Char]
+replacer index char board = take index board ++ char : drop (index + 1) board
+
 boardConverter :: Char -> [Char]
 boardConverter x
     | x == '9' = "111111111"
