@@ -1,4 +1,4 @@
--- module (NICHT ÄNDERN!)
+--module (NICHT ÄNDERN!)
 module XiangqiBot
     ( getMove
     , listMoves
@@ -257,19 +257,19 @@ startZielIsValid board isRed from to
 
 checkFigur :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
 checkFigur board isRed from to
-    | figur == 'G' || figur == 'g' = getGeneralMoves isRed from to
-    | figur == 'A' || figur == 'a' = getAdvisorMoves isRed from to
+    | figur == 'G' || figur == 'g' = getGeneralMoves board isRed from to
+    | figur == 'A' || figur == 'a' = getAdvisorMoves board isRed from to
     | figur == 'E' || figur == 'e' = getElephantMoves board isRed from to
     | figur == 'H' || figur == 'h' = getHorseMoves board from to
     | figur == 'R' || figur == 'r' = getRookMoves board from to
     | figur == 'C' || figur == 'c' = getCannonMoves board from to
-    | figur == 'S' || figur == 's' = getSoldierMoves isRed from to
+    | figur == 'S' || figur == 's' = getSoldierMoves board isRed from to
     | otherwise = ""
     where
         figur = getFigurByPos (getBoard board) from
 
-getGeneralMoves :: Bool -> [Int] -> [Int] -> String
-getGeneralMoves player startPos zielPos
+getGeneralMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getGeneralMoves board player startPos zielPos
     | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
@@ -280,8 +280,8 @@ getGeneralMoves player startPos zielPos
         yZiel = zielPos !! 0
         canMove = isInPalast zielPos player &&  abs (yStart - yZiel) + abs (xStart - xZiel) == 0
 
-getAdvisorMoves :: Bool -> [Int] -> [Int] -> String
-getAdvisorMoves player startPos zielPos
+getAdvisorMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getAdvisorMoves board player startPos zielPos
     | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
@@ -357,8 +357,8 @@ getCannonMoves board startPos zielPos
             | getFigurByPos board [yZiel, xZiel] /= '1' && ((getVerticalBlock board startPos zielPos) /= 1 && (getHorizontalBlock board startPos zielPos) /= 1) = False
             | otherwise = True
 
-getSoldierMoves :: Bool -> [Int] -> [Int] -> String
-getSoldierMoves player startPos zielPos
+getSoldierMoves :: [Char] -> Bool -> [Int] -> [Int] -> String
+getSoldierMoves board player startPos zielPos
     | startPos == zielPos = "" --nanti dibikin checkmove
     | canMove = "," ++ getMoveChar startPos ++ "-" ++ getMoveChar zielPos
     | otherwise = ""
