@@ -13,14 +13,13 @@ import Data.List
 
 --- external signatures (NICHT ÄNDERN!)
 getMove :: String -> String
-getMove b = final
+getMove b = last (splitOn ',' moves)
     where
-        moves = splitOn ',' (listMoves b)
-        move = head moves
-        final
-            | last move == ']' = init move
-            | head move == '[' = tail move 
-            | otherwise = move
+        splitted = splitOn ' ' b
+        board = getBoard (head splitted)
+        color = last splitted
+        isRed = color == "r"
+        moves = tail (filterValidMoves board isRed)
 
 listMoves :: String -> String
 listMoves b = "[" ++ tail (filterValidMoves board isRed) ++ "]"
@@ -448,6 +447,7 @@ main = do
     let check = "2R1g4/3R5/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
     let brb = "4g4/9/9/9/9/9/9/9/9/4G4"
     let check2 = "rheagaehr/9/1c5c1/s1s6/9/8S/S1S1R4/1C5C1/4R4/1HEAGAEH1"
+    let nex = "8R/9/R3g4/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2 b"
     print ((getVerticalBlock (getBoard brb) (getPos "e0") (getPos "e9")) == 0)
     print (getMoveChar (getGeneralCoordinate (getBoard brb) True))
     print (getMoveChar (getGeneralCoordinate (getBoard brb) False))
@@ -461,4 +461,5 @@ main = do
     print (filterValidMoves (getBoard check) True)
     print (filterValidMoves (getBoard check2) False)
     print (listMoves (getBoard start))
+    print (getMove (getBoard nex))
     
