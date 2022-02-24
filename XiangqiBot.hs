@@ -43,13 +43,6 @@ modifyBoard board start ziel = modifyBoard2 newBoard start ziel
 modifyBoard2 :: [Char] -> [Int] -> [Int] -> [Char]
 modifyBoard2 board start ziel = take (calculateIndex start) board ++ ['1'] ++ drop (calculateIndex start+1) board
 
-createNewBoard :: [Char] -> [Int] -> [Int] -> [Char]
-createNewBoard board start ziel = replacer startIndex '1' (replacer zielIndex figur (getBoard board))
-    where
-        figur = getFigurByPos (getBoard board) start
-        startIndex = calculateIndex start
-        zielIndex = calculateIndex ziel
-
 replacer :: Int -> Char -> [Char] -> [Char]
 replacer index char board = take index board ++ char : drop (index + 1) board
 
@@ -247,7 +240,7 @@ filterMove board isRed move
         newMove = getTranslatedMove move
         moveFrom = take 2 newMove
         moveTo = drop 2 newMove
-        newBoard = createNewBoard (getBoard board) moveFrom moveTo
+        newBoard = modifyBoard (getBoard board) moveFrom moveTo
         clear = clearBlickUndCheck newBoard isRed
         
 
@@ -305,7 +298,6 @@ clearBlickUndCheck board isRed
 
 checkFigur :: [Char] -> Bool -> [Int] -> [Int] -> [Char]
 checkFigur board isRed from to
-    -- | isCheck newBoard isRed || isTodesBlick newBoard = ""
     | figur == 'G' || figur == 'g' = getGeneralMoves board isRed from to
     | figur == 'A' || figur == 'a' = getAdvisorMoves board isRed from to
     | figur == 'E' || figur == 'e' = getElephantMoves board isRed from to
