@@ -199,6 +199,7 @@ isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 89))
 recurseCheck :: [Char] -> Bool -> Int -> Int -> [Char]
 recurseCheck board isRed curr end
     | curr == end = currCheck
+    | not (null currCheck) = currCheck
     | otherwise = currCheck ++ recurseCheck board isRed next end
     where 
         currCheck = checkMove board (not isRed) moveFrom moveTo
@@ -412,6 +413,7 @@ main = do
     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
     print (validMoves (getBoard blah) True)
     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
-    print (isCheck (getBoard check) True)
+    print (isCheck (getBoard check) False)
     print (listMoves start)
     print (getMove start)
+    print (listMoves "rheagaehr/9/1c5c1/2s3s1s/s3S4/9/S1S3S1S/1C5C1/9/RHEAGAEHR r")
