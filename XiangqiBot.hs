@@ -155,7 +155,7 @@ getGeneralCoordinateBlack board = [y,x]
         y = div (head index) 9
 
 isTodesBlick :: [Char] -> Bool
-isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 1
+isTodesBlick board = recurseVerticalBlock (getBoard board) blackGeneral redGeneral == 0
     where
         redGeneral = getGeneralCoordinate (getBoard board) True
         blackGeneral = getGeneralCoordinate (getBoard board) False
