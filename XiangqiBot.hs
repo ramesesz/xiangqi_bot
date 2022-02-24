@@ -181,20 +181,20 @@ recurseHorizontalBlock board curr end
         next = [head curr, last curr + 1]
 
 isCheck :: [Char] -> Bool -> Bool
-isCheck board isRed = recurseCheck (getBoard board) isRed (getGeneralCoordinate (getBoard board) isRed) 0 89
+isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 89))
 
 -- kalau checkMove gak kosong, berarti ga check
 -- kalau semuanya kosong berarti check
 
-recurseCheck :: [Char] -> Bool -> [Int] -> Int -> Int -> Bool
-recurseCheck board isRed general curr end
-    | not (null currCheck) = False
-    | curr == end = not (null currCheck)
-    | otherwise = not (null currCheck) && recurseCheck board isRed general next end
+recurseCheck :: [Char] -> Bool -> Int -> Int -> [Char]
+recurseCheck board isRed curr end
+    | curr == end = currCheck
+    | otherwise = currCheck ++ recurseCheck board isRed next end
     where 
-        currCheck = checkMove board isRed moveFrom general
+        currCheck = checkMove board (not isRed) moveFrom moveTo
         next = curr + 1
         moveFrom = calculatePos curr
+        moveTo = getGeneralCoordinate (getBoard board) isRed
 
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
@@ -402,4 +402,4 @@ main = do
     print (getHorizontalBlock (getBoard start) (getPos "b3") (getPos "a3"))
     print (validMoves (getBoard blah) True)
     print (getVerticalBlock (getBoard blah) (getPos "a0") (getPos "a1"))
-    print (isCheck (getBoard check) False)
+    print (isCheck (getBoard check) True)
