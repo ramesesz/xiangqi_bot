@@ -1,4 +1,4 @@
--- module (NICHT ÄNDERN!)
+--module (NICHT ÄNDERN!)
 module XiangqiBot
     ( getMove
     , listMoves
