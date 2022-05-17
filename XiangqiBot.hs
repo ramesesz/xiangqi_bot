@@ -167,15 +167,15 @@ getGeneralCoordinateBlack board = [y,x]
 isTodesBlick :: [Char] -> Bool
 isTodesBlick board
     | blackGeneral == [-1,-1] || redGeneral == [-1,-1] = True
-    | otherwise = getVerticalBlock (getBoard board) blackGeneral redGeneral == 0
+    | otherwise = getVerticalBlock board blackGeneral redGeneral == 0
     where
-        redGeneral = getGeneralCoordinate (getBoard board) True
-        blackGeneral = getGeneralCoordinate (getBoard board) False
+        redGeneral = getGeneralCoordinate board True
+        blackGeneral = getGeneralCoordinate board False
 
 getVerticalBlock :: [Char] -> [Int] -> [Int] -> Int 
 getVerticalBlock board start end
-    | head start > head end = recurseVerticalBlock (getBoard board) [head end+1, last end] [head start-1, last start]
-    | otherwise = recurseVerticalBlock (getBoard board) [head start+1, last start] [head end-1, last end]
+    | head start > head end = recurseVerticalBlock board [head end+1, last end] [head start-1, last start]
+    | otherwise = recurseVerticalBlock board [head start+1, last start] [head end-1, last end]
 
 recurseVerticalBlock :: [Char] -> [Int] -> [Int] -> Int
 recurseVerticalBlock board curr end
@@ -184,13 +184,13 @@ recurseVerticalBlock board curr end
     | otherwise = if currFigur /= '1' then recurseVerticalBlock board next end + 1 else recurseVerticalBlock board next end
     where
         currIndex = calculateIndex curr
-        currFigur = getFigurByIndex (getBoard board) currIndex
+        currFigur = getFigurByIndex board currIndex
         next = [head curr + 1, last curr]
 
 getHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int 
 getHorizontalBlock board start end
-    | last start > last end = recurseHorizontalBlock (getBoard board) [head end, last end+1] [head start, last start-1]
-    | otherwise = recurseHorizontalBlock (getBoard board) [head start, last start+1] [head end, last end-1]
+    | last start > last end = recurseHorizontalBlock board [head end, last end+1] [head start, last start-1]
+    | otherwise = recurseHorizontalBlock board [head start, last start+1] [head end, last end-1]
 
 recurseHorizontalBlock :: [Char] -> [Int] -> [Int] -> Int
 recurseHorizontalBlock board curr end
@@ -199,11 +199,11 @@ recurseHorizontalBlock board curr end
     | otherwise = if currFigur/='1' then recurseHorizontalBlock board next end + 1 else recurseHorizontalBlock board next end
     where
         currIndex = calculateIndex curr
-        currFigur = getFigurByIndex (getBoard board) currIndex
+        currFigur = getFigurByIndex board currIndex
         next = [head curr, last curr + 1]
 
 isCheck :: [Char] -> Bool -> Bool
-isCheck board isRed = not (null (recurseCheck (getBoard board) isRed 0 (length (getBoard board))))
+isCheck board isRed = not (null (recurseCheck board isRed 0 (length board)))
 
 -- kalau checkMove gak kosong, berarti ga check
 -- kalau semuanya kosong berarti check
@@ -219,7 +219,7 @@ recurseCheck board isRed curr end
             | otherwise = checkMove board (not isRed) moveFrom moveTo
         next = curr + 1
         moveFrom = calculatePos curr
-        moveTo = getGeneralCoordinate (getBoard board) isRed
+        moveTo = getGeneralCoordinate board isRed
 
 -- Dari index 0, loop sampe index 89 buat dapetin moves (pake concatMap) (from)
 -- Di recursemoves, recurse dari 0 sampe 89 buat index tujuan (to)
@@ -239,10 +239,9 @@ filterMove board isRed move
         newMove = getTranslatedMove move
         moveFrom = take 2 newMove
         moveTo = drop 2 newMove
-        newBoard = modifyBoard (getBoard board) moveFrom moveTo
+        newBoard = modifyBoard board moveFrom moveTo
         clear = clearBlickUndCheck newBoard isRed
         
-
 tryIndices :: [Int]
 tryIndices = [0..89]
 
@@ -250,7 +249,7 @@ validMoves :: [Char] -> Bool -> [Char]
 validMoves board isRed = concatMap (getValidMoves board isRed) tryIndices
 
 getValidMoves :: [Char] -> Bool -> Int -> [Char]
-getValidMoves board isRed index = recurseValidMoves board isRed index 0 (length (getBoard board))
+getValidMoves board isRed index = recurseValidMoves board isRed index 0 (length board)
 
 recurseValidMoves :: [Char] -> Bool -> Int -> Int -> Int -> [Char]
 recurseValidMoves board isRed from curr end
@@ -283,8 +282,8 @@ startZielIsValid board isRed from to
     | killOwn = False
     | otherwise = True
     where
-        figurFrom = getFigurByPos (getBoard board) from
-        figurTo = getFigurByPos (getBoard board) to
+        figurFrom = getFigurByPos board from
+        figurTo = getFigurByPos board to
         moveBlank = figurFrom == '1'
         opponentFigur = (isRed && isLower figurFrom) || (not isRed && isUpper figurFrom)
         killOwn = (isRed && isUpper figurTo) || (not isRed && isLower figurTo)
@@ -306,7 +305,7 @@ checkFigur board isRed from to
     | figur == 'S' || figur == 's' = getSoldierMoves board isRed from to
     | otherwise = ""
     where
-        figur = getFigurByPos (getBoard board) from
+        figur = getFigurByPos board from
         -- convertedBoard = getBoard board
         -- newBoard = modifyBoard convertedBoard from to
 
@@ -440,26 +439,80 @@ blackSoldierValid startPos zielPos
             yZiel = zielPos !! 0
 
 
-main :: IO ()
-main = do
-    let start = "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR b"
-    let blah = "9/9/9/9/9/9/S8/9/9/R8"
-    let check = "2R1g4/3R5/R8/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2"
-    let brb = "4g4/9/9/9/9/9/9/9/9/4G4"
-    let check2 = "rheagaehr/9/1c5c1/s1s6/9/8S/S1S1R4/1C5C1/4R4/1HEAGAEH1"
-    let nex = "8R/9/R3g4/s1s3s2/6h1s/9/S1S5S/c1H6/4A4/4GAE2 b"
-    print ((getVerticalBlock (getBoard brb) (getPos "e0") (getPos "e9")) == 0)
-    print (getMoveChar (getGeneralCoordinate (getBoard brb) True))
-    print (getMoveChar (getGeneralCoordinate (getBoard brb) False))
-    print (isTodesBlick (getBoard brb))
-    print (isCheck (getBoard check) False)
-    -- print (getBoard start)
-    print (getBoard start)
-    print (validMoves (getBoard brb) True)
-    print (getGeneralCoordinate (getBoard blah) True)
-    print (clearBlickUndCheck (getBoard check) False)
-    print (filterValidMoves (getBoard check) True)
-    print (filterValidMoves (getBoard check2) False)
-    print (listMoves (getBoard start))
-    print (getMove (getBoard nex))
+-- main :: IO ()
+-- main = do
+--     print (listMoves "rheagaehr/9/1c5c1/s3s1s1s/2s6/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rhe2a1hr/4a4/1c2eg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3GA4/RHE2AEHR b")
+--     print (listMoves "rhea1a1h1/9/1c2Sgr2/s1s4cs/6s2/1C7/S1S3SCS/R4A3/3G5/1HE2AEHR b")
+--     print (listMoves "rhea1a1h1/9/1c2g1r2/s1s4cs/6s2/1C7/S1S3SCS/R8/3GA4/1HE2AEHR b")
+--     print (listMoves "rheagaehr/9/1c7/s1sSs3s/9/c5s2/4S1S1S/1C5C1/9/RHEAGAEHR b")
+--     print (listMoves "rCeaga1hr/9/9/scs5s/2e3S2/c7S/9/4E2C1/9/RH1AGAEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR b")
+--     print (listMoves "rheaga1hr/9/1c7/s1sSs3s/6e2/c1E5S/4SsS2/1C5C1/9/RH1AGAEHR r")
+--     print (listMoves "rCeaga1hr/9/9/scs5s/2e3S2/c7S/9/4E2C1/9/RH1AGAEHR b")
+--     print (listMoves "r1e1ga1h1/4a4/4H1r2/7cs/s8/S1s6/5hSCS/R8/4G4/2EA1AEHR r")
+--     print (listMoves "rheagae1r/9/1c4hc1/s1s1s1s1s/9/4S4/SCS3S1S/7C1/9/RHEAGAEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rhe2a1hr/4a4/1c2eg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3G5/RHEA1AEHR r")
+--     print (listMoves "rhea1a1hr/4g4/1c2e2c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/4G4/RHEA1AEHR r")
+--     print (listMoves "rheaga1hr/9/1c2S4/s1s5s/6e2/c1E5S/4s1S2/1C5C1/9/RH1AGAEHR b")
+--     print (listMoves "rCeaga1hr/9/1c7/s1s5s/2e6/c7S/6S2/4E2C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagae1r/4h4/1c5c1/s1s1s3s/4S1s2/9/SCS3S1S/7C1/9/RHEAGAEHR r")
+--     print (listMoves "1Ceaga1hr/9/r8/scs5s/2e3S2/R7S/9/4E2C1/9/1H1AGAEHR b")
+--     print (listMoves "r1e1ga1h1/4a4/4c1r2/2H4cs/s8/S1s6/5hSCS/R8/9/2EAGAEHR r")
+--     print (listMoves "rheagaehr/9/1c1c5/s1s1s1s1s/9/9/S1S1S1S1S/3C3C1/9/RHEAGAEHR r")
+--     print (listMoves "rheaga1hr/9/1c7/s1sSs3s/6e2/c1E2s3/4S1S1S/1C5C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rheagaehr/9/1c5c1/s3s1s1s/2s6/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rheaga1hr/9/1c2e4/s1s5s/9/c1E5S/4s1S2/1C5C1/9/RH1AGAEHR r")
+--     print (listMoves "rhe1ga1h1/4a4/4c1r2/7cs/s1s6/9/S1S3SCS/R8/9/1HEAGAEHR r")
+--     print (listMoves "rheaga1hr/9/1c2e4/s1sSs3s/9/c1E2s3/4S1S1S/1C5C1/9/RH1AGAEHR b")
+--     print (listMoves "rheaga1hr/9/1c7/s1s1S3s/6e2/c1E5S/4SsS2/1C5C1/9/RH1AGAEHR b")
+--     print (listMoves "rhea1a1hr/4g4/1c2e2c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/4G4/RHEA1AEHR r")
+--     print (listMoves "rhe2a1hr/9/1c1aeg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3GA4/RHE2AEHR r")
+--     print (listMoves "rheaga1hr/9/1c7/s1sSs3s/6e2/c1E2s2S/4S1S2/1C5C1/9/RH1AGAEHR b")
+--     print (listMoves "rhea1a1h1/4g4/1c3r3/7cs/s1s1C4/9/S1S3SCS/R8/4A4/1HE1GAEHR r")
+--     print (listMoves "rheaga1hr/9/1c7/s1sSs3s/6e2/c1E2s3/4S1S1S/1C5C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rhea1a1hr/5g3/1c2e2c1/s1s1s3s/6s2/1C2S4/S1S3S1S/3G3C1/9/RHEA1AEHR b")
+--     print (listMoves "rhea1a1h1/4g4/1c3r3/s6cs/2s3s2/1C7/S1S3SCS/R8/4A4/1HE1GAEHR r")
+--     print (listMoves "rheagaehr/9/1c1c5/s1s1s1s1s/9/9/S1S1S1S1S/3C3C1/9/RHEAGAEHR r")
+--     print (listMoves "rCeaga1hr/9/1c2e4/s1s5s/9/c1E5S/6S2/4s2C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagaehr/9/1c7/s1s1s3s/2S3s2/c8/4S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR b")
+--     print (listMoves "rhea1a1h1/4g4/1c2r4/7cs/s1s1C4/9/S1S3SCS/R8/4A4/1HE1GAEHR b")
+--     print (listMoves "rhe2a1hr/9/1c1aeg3/s1s1s2cs/6s2/1C2S4/S1S3SCS/R8/3GA4/1HE2AEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "r1e1ga1h1/4a4/4H1r2/7cs/s8/S1s6/6SCS/R2h5/9/2EAGAEHR r")
+--     print (listMoves "rhea1a1h1/9/1c2g1r2/s1s4cs/6s2/1C7/S1S3SCS/R4A3/3G5/1HE2AEHR r")
+--     print (listMoves "rheagaehr/9/2c4c1/s1s1s1s1s/9/9/S1S1S1S1S/3C3C1/9/RHEAGAEHR r")
+--     print (listMoves "rhea1a1h1/9/1c2Sgr2/s1s4cs/6s2/1C7/S1S3SCS/R4A3/3G5/1HE2AEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR b")
+--     print (listMoves "r1e1ga1h1/4a4/4H1r2/7cs/s8/S1s6/6SCS/R2h5/9/2EAGAEHR r")
+--     print (listMoves "rheaga1hr/9/1c2e4/s1s5s/9/c1E5S/4s1S2/1C5C1/9/RH1AGAEHR r")
+--     print (listMoves "rhea1a1h1/4g4/4cr3/7cs/s1sC5/9/S1S3SCS/R8/9/1HEAGAEHR b")
+--     print (listMoves "rheagaeCr/9/2c4c1/s1s1s1s1s/9/9/S1S1S1S1S/3C5/9/RHEAGAEHR b")
+--     print (listMoves "rheagae1r/4h4/1c5c1/s1s1s3s/4S1s2/9/SCS3S1S/7C1/9/RHEAGAEHR r")
+--     print (listMoves "rheaga1hr/9/1c2e2c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/9/RHEAGAEHR r")
+--     print (listMoves "rhe2a1hr/9/1c1aeg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3GA4/RHE2AEHR r")
+--     print (listMoves "1Ceaga1hr/9/r8/scs5s/2e3S2/c7S/9/4E2C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rhea1a1hr/9/1c2eg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/3G3C1/9/RHEA1AEHR r")
+--     print (listMoves "rheagae1r/4h4/1c5c1/s3s3s/2s1S1s2/9/SCS3S1S/2H4C1/9/R1EAGAEHR r")
+--     print (listMoves "rheagaehr/9/1c7/s1s1s1s1s/9/S1S4c1/4S1S1S/1C5C1/9/RHEAGAEHR b")
+--     print (listMoves "rheaga1hr/9/1c2e4/s1sSs3s/9/c4s3/4S1S1S/1C2E2C1/9/RH1AGAEHR r")
+--     print (listMoves "rheagaeCr/9/2c6/s1s1s1s1s/9/2S4c1/S3S1S1S/3C5/9/RHEAGAEHR b")
+--     print (listMoves "rheagaeCr/9/2c6/s1s1s1s1s/9/2S4c1/S3S1S1S/3C5/9/RHEAGAEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s3s1s1s/2s6/S8/2S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rheagaeh1/9/1c7/4r4/s1s3s1s/9/9/4s4/9/3G3c1 b")
+--     print (listMoves "rhea1a1hr/9/1c2eg1c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3G5/RHEA1AEHR b")
+--     print (listMoves "rhea1a1hr/4g4/1c2e2c1/s1s1s3s/6s2/1C2S4/S1S3S1S/7C1/3G5/RHEA1AEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
+--     print (listMoves "rheaga1h1/4C4/4c1r2/7cs/s1s6/9/S1S3SCS/R8/9/1HEAGAEHR b")
+--     print (listMoves "rhea1a1h1/4g4/1c2r4/s6cs/1Cs3s2/9/S1S3SCS/R8/4A4/1HE1GAEHR r")
+--     print (listMoves "r1e1ga1h1/4a4/2h1c1r2/7cs/s1s6/2S6/S5SCS/R1H6/9/2EAGAEHR b")
+--     print (listMoves "rhe1ga1h1/4a4/4c1r2/7cs/s1s6/9/S1S3SCS/R1H6/9/2EAGAEHR b")
+--     print (listMoves "r1e1ga1h1/4a4/4c1r2/7cs/sh7/1Hs6/S5SCS/R8/9/2EAGAEHR r")
+--     print (listMoves "rhea1a1h1/4g4/1c2r4/7cs/s1s1C4/9/S1S3SCS/R8/4A4/1HE1GAEHR b")
+--     print (listMoves "rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR r")
     
